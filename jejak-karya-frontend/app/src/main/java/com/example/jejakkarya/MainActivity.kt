@@ -10,20 +10,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.jejakkarya.navigation.AppNavigation
 import com.example.jejakkarya.ui.theme.JejakKaryaTheme
+import com.example.jejakkarya.ui.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Inisialisasi SettingsViewModel di tingkat aktivitas
+        val settingsViewModel: SettingsViewModel by viewModels()
+
         setContent {
-            JejakKaryaTheme {
+            // Amati state isDarkTheme
+            val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+
+            JejakKaryaTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    AppNavigation(settingsViewModel)
                 }
             }
         }

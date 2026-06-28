@@ -27,7 +27,8 @@ fun HomeScreen(
     viewModel: GalleryViewModel = viewModel(),
     bookmarkViewModel: BookmarkViewModel = viewModel(),
     onNavigateToDetail: (Int) -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val searchViewModel: GalleryViewModel = viewModel(key = "SearchViewModel")
     
@@ -46,6 +47,10 @@ fun HomeScreen(
                     scope.launch { drawerState.close() }
                     if (route == "refresh") {
                         showSyncDialog = true
+                    } else if (route == "settings") {
+                        onNavigateToSettings()
+                    } else if (route == "about") {
+                        onNavigateToAbout()
                     }
                     // Handle navigasi drawer lain di sini nanti
                 }
@@ -90,6 +95,8 @@ fun HomeScreen(
                             onArtworkClick = onNavigateToDetail
                         )
                         3 -> com.example.jejakkarya.ui.screens.home.ProfileTab(
+                            bookmarkViewModel = bookmarkViewModel,
+                            onNavigateToSettings = onNavigateToSettings,
                             onNavigateToAbout = onNavigateToAbout
                         )
                     }

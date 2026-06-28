@@ -1,8 +1,13 @@
 package com.example.jejakkarya.ui.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
@@ -32,16 +37,25 @@ fun AppNavigationDrawerContent(
     ModalDrawerSheet(
         drawerContainerColor = Color(0xFFFFFFFF)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Jejak Karya",
-            modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
-            color = Color(0xFF4A3B32),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Cursive
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 28.dp), color = Color.LightGray)
+        Spacer(modifier = Modifier.height(32.dp))
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 16.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+        ) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = com.example.jejakkarya.R.drawable.jejak_karuhun),
+                contentDescription = "Logo Jejak Karya",
+                modifier = Modifier.size(100.dp)
+            )
+            Spacer(modifier = Modifier.height(15.dp))
+            Text(
+                text = "Jejak Karya",
+                color = Color(0xFF4A3B32),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Cursive
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         NavigationDrawerItem(
@@ -58,27 +72,7 @@ fun AppNavigationDrawerContent(
             icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = Color(0xFF4A3B32)) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
-        NavigationDrawerItem(
-            label = { Text("Notifikasi", color = Color(0xFF4A3B32)) },
-            selected = false,
-            onClick = { onNavigate("notifications") },
-            icon = { Icon(Icons.Filled.Notifications, contentDescription = null, tint = Color(0xFF4A3B32)) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text("Panduan Bantuan", color = Color(0xFF4A3B32)) },
-            selected = false,
-            onClick = { onNavigate("help") },
-            icon = { Icon(Icons.Outlined.HelpOutline, contentDescription = null, tint = Color(0xFF4A3B32)) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text("Syarat & Ketentuan", color = Color(0xFF4A3B32)) },
-            selected = false,
-            onClick = { onNavigate("terms") },
-            icon = { Icon(Icons.Outlined.Policy, contentDescription = null, tint = Color(0xFF4A3B32)) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
+
         NavigationDrawerItem(
             label = { Text("Tentang Aplikasi", color = Color(0xFF4A3B32)) },
             selected = false,

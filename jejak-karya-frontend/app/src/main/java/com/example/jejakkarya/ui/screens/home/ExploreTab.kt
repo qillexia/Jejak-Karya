@@ -102,7 +102,7 @@ fun ExploreTab(
                 "Fotografi" -> "Photography"
                 else -> "Sunflowers"
             }
-            viewModel.syncAllCategories(currentActiveQuery = query)
+            viewModel.refreshCurrentCategory(query)
         },
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter

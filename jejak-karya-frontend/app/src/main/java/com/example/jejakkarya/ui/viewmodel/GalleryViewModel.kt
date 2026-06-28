@@ -42,8 +42,8 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage: SharedFlow<String> = _toastMessage
 
-    fun fetchArtworks(query: String, isRefresh: Boolean = false, updateUi: Boolean = true, showSkeleton: Boolean = true, count: Int = 11) {
-        viewModelScope.launch {
+    fun fetchArtworks(query: String, isRefresh: Boolean = false, updateUi: Boolean = true, showSkeleton: Boolean = true, count: Int = 11): kotlinx.coroutines.Job {
+        return viewModelScope.launch {
             if (!isRefresh && updateUi) {
                 // Cek cache in-memory dulu
                 queryCache[query]?.let { cachedArtworks ->
@@ -134,19 +134,46 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     fun syncAllCategories(currentActiveQuery: String, forceSkeleton: Boolean = false) {
         viewModelScope.launch {
             _isRefreshing.value = true
-            val allQueries = listOf("Sunflowers", "Painting", "Sculpture", "Photography")
-            val jobs = allQueries.map { query ->
-                launch {
-                    fetchArtworks(
-                        query = query, 
-                        isRefresh = true, 
-                        updateUi = (query == currentActiveQuery), 
-                        showSkeleton = forceSkeleton && (query == currentActiveQuery)
-                    )
-                }
+            
+            // Prioritaskan kategori yang sedang aktif dulu
+            val activeJob = fetchArtworks(
+                query = currentActiveQuery, 
+                isRefresh = true, 
+                updateUi = true, 
+                showSkeleton = forceSkeleton
+            )
+            
+            // Tunggu fetch selesai agar spinner loading tidak menghilang sebelum waktunya
+            activeJob.join()
+            
+            // Matikan indikator pull-to-refresh setelah kategori utama selesai
+            _isRefreshing.value = false
+            
+            // Lanjutkan sinkronisasi kategori lainnya secara berurutan (jeda 1 detik) 
+            // untuk mencegah API Rate Limit (403 Forbidden) dari The Met Museum
+            val otherQueries = listOf("Sunflowers", "Painting", "Sculpture", "Photography").filter { it != currentActiveQuery }
+            for (query in otherQueries) {
+                kotlinx.coroutines.delay(1000)
+                fetchArtworks(
+                    query = query, 
+                    isRefresh = true, 
+                    updateUi = false, 
+                    showSkeleton = false
+                )
             }
-            // Tunggu semua proses selesai secara PARALEL
-            jobs.forEach { it.join() }
+        }
+    }
+
+    fun refreshCurrentCategory(query: String) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            val activeJob = fetchArtworks(
+                query = query, 
+                isRefresh = true, 
+                updateUi = true, 
+                showSkeleton = true
+            )
+            activeJob.join()
             _isRefreshing.value = false
         }
     }

@@ -10,9 +10,10 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import com.example.jejakkarya.ui.screens.home.HomeScreen
 import com.example.jejakkarya.ui.screens.detail.ArtworkDetailScreen
+import com.example.jejakkarya.ui.screens.settings.SettingsScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(settingsViewModel: com.example.jejakkarya.ui.viewmodel.SettingsViewModel) {
     val navController = rememberNavController()
     // Scope ViewModel ke Activity agar cache datanya bisa dipakai bersama
     val galleryViewModel: com.example.jejakkarya.ui.viewmodel.GalleryViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -29,6 +30,9 @@ fun AppNavigation() {
                 },
                 onNavigateToAbout = {
                     navController.navigate("about")
+                },
+                onNavigateToSettings = {
+                    navController.navigate("settings")
                 }
             )
         }
@@ -75,6 +79,27 @@ fun AppNavigation() {
         ) {
             com.example.jejakkarya.ui.screens.about.AboutScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "settings",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(300)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(300)
+                )
+            }
+        ) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = settingsViewModel
             )
         }
     }

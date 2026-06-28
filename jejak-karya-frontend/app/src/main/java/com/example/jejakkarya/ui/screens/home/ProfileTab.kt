@@ -26,8 +26,13 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ProfileTab(
     modifier: Modifier = Modifier,
+    bookmarkViewModel: com.example.jejakkarya.ui.viewmodel.BookmarkViewModel,
+    onNavigateToSettings: () -> Unit,
     onNavigateToAbout: () -> Unit
 ) {
+    val savedArtworks by bookmarkViewModel.savedArtworks.collectAsState()
+    val totalBookmarks = savedArtworks.size
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -71,6 +76,38 @@ fun ProfileTab(
             color = Color.Gray
         )
         
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Statistik Card
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = totalBookmarks.toString(),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF994121)
+                    )
+                    Text(
+                        text = "Karya Tersimpan",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+        
         Spacer(modifier = Modifier.height(32.dp))
         
         // Menu List
@@ -84,7 +121,7 @@ fun ProfileTab(
                 ProfileMenuItem(
                     icon = Icons.Filled.Settings,
                     title = "Pengaturan",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToSettings
                 )
                 HorizontalDivider(color = Color(0xFFF0EAE1))
                 ProfileMenuItem(

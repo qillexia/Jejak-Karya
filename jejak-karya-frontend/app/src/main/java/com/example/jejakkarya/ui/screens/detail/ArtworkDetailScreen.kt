@@ -152,10 +152,10 @@ fun ArtworkDetailScreen(
                             .fillMaxSize()
                             .padding(horizontal = 20.dp, vertical = 28.dp)
                     ) {
-                        // Header: Judul & Tombol Simpan
+                        // Header: Judul
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -166,44 +166,6 @@ fun ArtworkDetailScreen(
                                 lineHeight = 30.sp,
                                 modifier = Modifier.weight(1f)
                             )
-                            
-                            Spacer(modifier = Modifier.width(16.dp))
-                            
-                            IconButton(
-                                onClick = {
-                                    if (isSaved) {
-                                        bookmarkViewModel.removeArtwork(artworkId)
-                                    } else {
-                                        artwork?.let {
-                                            bookmarkViewModel.saveArtwork(
-                                                ArtworkEntity(
-                                                    objectID = it.objectID,
-                                                    title = it.displayTitle,
-                                                    origin = it.displayOrigin,
-                                                    medium = it.displayMedium,
-                                                    displayImage = it.displayImage,
-                                                    artistDisplayName = it.displayArtist
-                                                )
-                                            )
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(Color(0xFFFFF6F3), CircleShape)
-                            ) {
-                                Icon(
-                                    imageVector = if (isSaved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                    contentDescription = "Simpan",
-                                    tint = if (isSaved) Color.Red else Color(0xFFCCCCCC),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .graphicsLayer(
-                                            scaleX = heartScale,
-                                            scaleY = heartScale
-                                        )
-                                )
-                            }
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -316,6 +278,45 @@ fun ArtworkDetailScreen(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Kembali",
                     tint = Color.White
+                )
+            }
+
+            // 4. Tombol Favorit Mengambang di Pojok Kanan Atas
+            IconButton(
+                onClick = {
+                    if (isSaved) {
+                        bookmarkViewModel.removeArtwork(artworkId)
+                    } else {
+                        artwork?.let {
+                            bookmarkViewModel.saveArtwork(
+                                ArtworkEntity(
+                                    objectID = it.objectID,
+                                    title = it.displayTitle,
+                                    origin = it.displayOrigin,
+                                    medium = it.displayMedium,
+                                    displayImage = it.displayImage,
+                                    artistDisplayName = it.displayArtist
+                                )
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 48.dp, end = 16.dp)
+                    .size(48.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+            ) {
+                Icon(
+                    imageVector = if (isSaved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = "Simpan",
+                    tint = if (isSaved) Color(0xFFFF5252) else Color.White,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer(
+                            scaleX = heartScale,
+                            scaleY = heartScale
+                        )
                 )
             }
         }

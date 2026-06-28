@@ -69,4 +69,15 @@ class StorageHelper(context: Context) {
             emptyList()
         }
     }
+
+    fun clearAllCache() {
+        val keys = prefs.all.keys
+        val editor = prefs.edit()
+        keys.forEach { key ->
+            if (key.startsWith("home_cache_")) {
+                editor.remove(key)
+            }
+        }
+        editor.apply()
+    }
 }
