@@ -1,4 +1,4 @@
-# 🏛️ Jejak Karya (Jejak Karuhun)
+# 🏛️ Jejak Karya
 
 ![Jejak Karya Banner](https://img.shields.io/badge/Status-Active-success)
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-blue?logo=kotlin)
