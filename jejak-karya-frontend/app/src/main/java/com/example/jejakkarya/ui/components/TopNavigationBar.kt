@@ -31,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopNavigationBar(
+    userInitial: String = "A",
     onMenuClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -67,7 +68,7 @@ fun TopNavigationBar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "A",
+                    text = userInitial.uppercase(),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp

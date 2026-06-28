@@ -9,6 +9,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +27,9 @@ import com.example.jejakkarya.ui.viewmodel.SettingsViewModel
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    onEditProfile: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val context = LocalContext.current
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
@@ -38,6 +42,7 @@ fun SettingsScreen(
     }
 
     var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -77,6 +82,42 @@ fun SettingsScreen(
                     }
                 }
             )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Edit Profile Setting
+            SettingItem(
+                icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                title = "Ubah Data Akun",
+                subtitle = "Perbarui profil dan kata sandi",
+                action = {
+                    Button(
+                        onClick = onEditProfile,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Text("Ubah")
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Logout Setting
+            SettingItem(
+                icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.Red) },
+                title = "Keluar Akun",
+                subtitle = "Akhiri sesi dan kembali ke login",
+                action = {
+                    Button(
+                        onClick = { showLogoutDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Text("Keluar")
+                    }
+                }
+            )
         }
 
         // Dialog Konfirmasi Hapus Cache
@@ -97,6 +138,30 @@ fun SettingsScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showClearCacheDialog = false }) {
+                        Text("Batal")
+                    }
+                }
+            )
+        }
+
+        // Dialog Konfirmasi Keluar Akun
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(text = "Keluar Akun") },
+                text = { Text(text = "Apakah Anda yakin ingin keluar dari Jejak Karya? Anda perlu login kembali untuk mengakses data Anda.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            onLogout()
+                        }
+                    ) {
+                        Text("Keluar", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
                         Text("Batal")
                     }
                 }

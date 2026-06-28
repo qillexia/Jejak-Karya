@@ -26,9 +26,11 @@ import androidx.compose.ui.unit.dp
 fun HomeScreen(
     viewModel: GalleryViewModel = viewModel(),
     bookmarkViewModel: BookmarkViewModel = viewModel(),
+    authViewModel: com.example.jejakkarya.ui.viewmodel.AuthViewModel,
     onNavigateToDetail: (Int) -> Unit,
     onNavigateToAbout: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val searchViewModel: GalleryViewModel = viewModel(key = "SearchViewModel")
     
@@ -38,6 +40,13 @@ fun HomeScreen(
     
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    
+    val userProfile by authViewModel.userProfile.collectAsState()
+    val initial = userProfile?.name?.firstOrNull()?.toString() ?: "A"
+
+    LaunchedEffect(Unit) {
+        authViewModel.fetchProfile()
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -51,8 +60,9 @@ fun HomeScreen(
                         onNavigateToSettings()
                     } else if (route == "about") {
                         onNavigateToAbout()
+                    } else if (route == "logout") {
+                        onLogout()
                     }
-                    // Handle navigasi drawer lain di sini nanti
                 }
             )
         }
@@ -60,6 +70,7 @@ fun HomeScreen(
         Scaffold(
             topBar = { 
                 TopNavigationBar(
+                    userInitial = initial,
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     }
@@ -96,8 +107,10 @@ fun HomeScreen(
                         )
                         3 -> com.example.jejakkarya.ui.screens.home.ProfileTab(
                             bookmarkViewModel = bookmarkViewModel,
+                            authViewModel = authViewModel,
                             onNavigateToSettings = onNavigateToSettings,
-                            onNavigateToAbout = onNavigateToAbout
+                            onNavigateToAbout = onNavigateToAbout,
+                            onLogout = onLogout
                         )
                     }
                 }

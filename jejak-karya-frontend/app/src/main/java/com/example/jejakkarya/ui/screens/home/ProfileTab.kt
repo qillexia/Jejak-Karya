@@ -27,11 +27,15 @@ import androidx.compose.ui.unit.sp
 fun ProfileTab(
     modifier: Modifier = Modifier,
     bookmarkViewModel: com.example.jejakkarya.ui.viewmodel.BookmarkViewModel,
+    authViewModel: com.example.jejakkarya.ui.viewmodel.AuthViewModel,
     onNavigateToSettings: () -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val savedArtworks by bookmarkViewModel.savedArtworks.collectAsState()
     val totalBookmarks = savedArtworks.size
+    
+    val userProfile by authViewModel.userProfile.collectAsState()
 
     Column(
         modifier = modifier
@@ -52,8 +56,9 @@ fun ProfileTab(
                 .border(4.dp, Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
+            val initial = userProfile?.name?.firstOrNull()?.uppercase() ?: "G"
             Text(
-                text = "G",
+                text = initial,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF994121)
@@ -64,14 +69,14 @@ fun ProfileTab(
         
         // Nama
         Text(
-            text = "Guest User",
+            text = userProfile?.name ?: "Memuat...",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF4A3B32)
         )
         
         Text(
-            text = "Penggemar Seni",
+            text = userProfile?.username?.let { "@$it" } ?: "Sedang memuat profil...",
             fontSize = 14.sp,
             color = Color.Gray
         )
@@ -136,12 +141,12 @@ fun ProfileTab(
         
         // Tombol Login/Logout
         Button(
-            onClick = { /* TODO: Navigasi ke Login */ },
+            onClick = onLogout,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF994121)),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text("Masuk / Daftar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            Text("Keluar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
         }
         
         Spacer(modifier = Modifier.height(120.dp)) // padding bawah untuk bottom nav

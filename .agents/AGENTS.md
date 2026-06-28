@@ -22,3 +22,8 @@ Berdasarkan riwayat dan preferensi pengerjaan (*prompting*), berikut adalah atur
 - **Clean Code**: 
   - Usahakan kode yang *compact* dan terstruktur. Gunakan *Grid* atau tata letak modern (seperti Parallax) untuk menghemat ruang jika diperlukan.
   - Pisahkan logika dari UI dengan menempatkannya di *ViewModel* atau *Repository*.
+- **Sinkronisasi Data & Keamanan**: 
+  - Komponen UI (seperti inisial profil, nama) harus selalu tersinkronisasi secara dinamis dari *StateFlow* agar tidak ada data basi (stale).
+  - Jika ada perubahan data kredensial atau *state* krusial (seperti penggantian sandi), pastikan untuk selalu menyelaraskannya dengan *cache* keamanan lokal (misalnya pada Biometrik/EncryptedSharedPreferences) supaya terhindar dari galat "Invalid Credential".
+- **Detail Layout & Proporsi**: 
+  - Selalu perhatikan atribut detail di Jetpack Compose seperti `fillMaxWidth`, `padding`, dan `RoundedCornerShape` di setiap form dan komponen agar tetap proporsional dan tidak terlihat *out-of-place* dibandingkan dengan elemen di sekelilingnya.
