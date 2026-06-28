@@ -42,6 +42,13 @@ class StorageHelper(context: Context) {
         _bookmarksFlow.value = current
     }
 
+    fun removeBookmarks(ids: List<Int>) {
+        val current = getSavedBookmarks().toMutableList()
+        current.removeAll { ids.contains(it.objectID) }
+        prefs.edit().putString(BOOKMARKS_KEY, gson.toJson(current)).apply()
+        _bookmarksFlow.value = current
+    }
+
     fun isBookmarked(id: Int): Boolean {
         return getSavedBookmarks().any { it.objectID == id }
     }

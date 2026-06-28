@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Policy
@@ -43,6 +44,13 @@ fun AppNavigationDrawerContent(
         HorizontalDivider(modifier = Modifier.padding(horizontal = 28.dp), color = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
 
+        NavigationDrawerItem(
+            label = { Text("Sinkronisasi Data", color = Color(0xFF4A3B32)) },
+            selected = false,
+            onClick = { onNavigate("refresh") },
+            icon = { Icon(Icons.Filled.Refresh, contentDescription = null, tint = Color(0xFF4A3B32)) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
         NavigationDrawerItem(
             label = { Text("Pengaturan", color = Color(0xFF4A3B32)) },
             selected = false,

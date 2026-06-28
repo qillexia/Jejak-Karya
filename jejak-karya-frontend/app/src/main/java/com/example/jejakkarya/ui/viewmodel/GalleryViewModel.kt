@@ -11,6 +11,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -32,126 +34,120 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     // Cache in-memory untuk menyimpan hasil pencarian per kategori
     private val queryCache = mutableMapOf<String, List<Artwork>>()
-
+        
     init {
-        fetchArtworks()
+        fetchArtworks("Sunflowers")
     }
 
-    fun fetchArtworks(query: String = "Sunflowers", isRefresh: Boolean = false) {
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage: SharedFlow<String> = _toastMessage
+
+    fun fetchArtworks(query: String, isRefresh: Boolean = false, updateUi: Boolean = true, showSkeleton: Boolean = true, count: Int = 11) {
         viewModelScope.launch {
-            if (isRefresh) {
-                _isRefreshing.value = true
-            }
-
-            // 1. Cek In-Memory Cache (RAM)
-            if (!isRefresh && queryCache.containsKey(query)) {
-                _uiState.value = GalleryState.Success(queryCache[query]!!)
-                return@launch
-            }
-
-            // 2. Cek Offline Cache (SharedPreferences)
-            val offlineCache = storageHelper.getHomeCache(query)
-            if (!isRefresh && offlineCache.isNotEmpty()) {
-                val cachedArtworks = offlineCache.map { entity ->
-                    Artwork(
-                        objectID = entity.objectID,
-                        title = entity.title,
-                        culture = entity.origin,
-                        country = null,
-                        medium = entity.medium,
-                        primaryImageSmall = entity.displayImage,
-                        primaryImage = null
-                    )
+            if (!isRefresh && updateUi) {
+                // Cek cache in-memory dulu
+                queryCache[query]?.let { cachedArtworks ->
+                    _uiState.value = GalleryState.Success(cachedArtworks)
+                    return@launch
                 }
-                queryCache[query] = cachedArtworks
-                _uiState.value = GalleryState.Success(cachedArtworks)
-                return@launch
+                
+                // Cek Offline Cache
+                val offlineCache = storageHelper.getHomeCache(query)
+                if (offlineCache.isNotEmpty()) {
+                    val cachedArtworks = offlineCache.map { entity ->
+                        Artwork(
+                            objectID = entity.objectID,
+                            title = entity.title,
+                            culture = entity.origin,
+                            country = null,
+                            medium = entity.medium,
+                            primaryImageSmall = entity.displayImage,
+                            primaryImage = null,
+                            artistDisplayName = entity.artistDisplayName
+                        )
+                    }
+                    queryCache[query] = cachedArtworks
+                    _uiState.value = GalleryState.Success(cachedArtworks)
+                    return@launch
+                }
             }
 
-            if (!isRefresh) {
-                _uiState.value = GalleryState.Initial
+            if (updateUi && showSkeleton) {
+                _uiState.value = GalleryState.Loading
             }
             try {
-                // Beri batas waktu maksimal 15 detik untuk keseluruhan proses
-                withTimeoutOrNull(15000L) {
-                    val searchJob = async {
-                        // 1. Ambil daftar ID dari API (/api)
-                        val searchResponse = RetrofitClient.instance.searchArtworks(query)
-                        
-                        if (searchResponse.success && searchResponse.data.objectIDs != null) {
-                            val allIds = searchResponse.data.objectIDs
-                            // Tingkatkan batas penarikan awal ke 20, untuk menggaransi kita mendapat minimal 11 gambar (3 carousel + 8 grid) setelah filtering gambar kosong.
-                            val targetIds = allIds.take(20)
-                            
-                            // Siapkan list kosong yang akan diisi secara progresif
-                            val loadedArtworks = mutableListOf<Artwork>()
-                            
-                            // 2. Fetch detail dari masing-masing ID secara paralel
-                            val deferredArtworks = targetIds.map { id ->
-                                async {
-                                    try {
-                                        val detailResp = RetrofitClient.instance.getArtworkDetail(id)
-                                        if (detailResp.success && detailResp.data.displayImage.isNotEmpty()) {
-                                            // Begitu satu gambar selesai dimuat, langsung kirim ke layar UI!
-                                            synchronized(loadedArtworks) {
-                                                loadedArtworks.add(detailResp.data)
-                                                // Ubah state dari Loading/Initial menjadi Success secara bertahap
-                                                _uiState.value = GalleryState.Success(loadedArtworks.toList())
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        // Abaikan item yang gagal dimuat
-                                    }
-                                }
-                            }
-                            
-                            // Tunggu semua selesai untuk memastikan tidak ada yang tersisa
-                            deferredArtworks.awaitAll()
-                            
-                            if (loadedArtworks.isEmpty()) {
-                                if (!isRefresh) _uiState.value = GalleryState.Error("Tidak ada gambar artefak yang tersedia saat ini.")
-                            } else {
-                                // 2. Simpan hasil akhir ke dalam cache in-memory
-                                queryCache[query] = loadedArtworks.toList()
-                                
-                                // 3. Simpan ke Offline Cache (SharedPreferences)
-                                val entitiesToSave = loadedArtworks.map { artwork ->
-                                    ArtworkEntity(
-                                        objectID = artwork.objectID,
-                                        title = artwork.title,
-                                        origin = artwork.culture ?: "",
-                                        medium = artwork.medium ?: "",
-                                        displayImage = artwork.primaryImageSmall ?: ""
-                                    )
-                                }
-                                storageHelper.saveHomeCache(query, entitiesToSave)
-                                
-                                _uiState.value = GalleryState.Success(loadedArtworks.toList())
-                            }
-                        } else {
-                            if (!isRefresh) _uiState.value = GalleryState.Error("Data karya seni tidak ditemukan.")
-                        }
-                    }
-
-                    // Tahan nafas selama 300ms. Jika internet sangat cepat dan searchJob selesai (atau minimal dapat 1 data),
-                    // state akan berubah menjadi Success. 
-                    // Jika setelah 300ms masih Initial (belum dapat apa-apa), baru kita tampilkan Skeleton Loading.
-                    kotlinx.coroutines.delay(300)
-                    if (searchJob.isActive && _uiState.value == GalleryState.Initial) {
-                        _uiState.value = GalleryState.Loading
+                // STRATEGI BARU: 1 panggilan ke Backend, Backend yang urus semuanya!
+                val response = RetrofitClient.instance.getBatchArtworks(
+                    search = query,
+                    count = count,
+                    refresh = isRefresh
+                )
+                
+                if (response.success && response.data.isNotEmpty()) {
+                    // Urutkan agar karya dengan "Seniman Tidak Diketahui" selalu berada di paling bawah
+                    val artworks = response.data.sortedBy { 
+                        if (it.displayArtist == "Seniman Tidak Diketahui") 1 else 0 
                     }
                     
-                    searchJob.await()
-                } ?: run {
-                    if (!isRefresh) _uiState.value = GalleryState.Error("Permintaan kehabisan waktu (Timeout). Pastikan koneksi internet Anda stabil.")
+                    // Simpan ke cache in-memory
+                    queryCache[query] = artworks
+                    
+                    // Simpan ke Offline Cache (SharedPreferences)
+                    val entitiesToSave = artworks.map { artwork ->
+                        ArtworkEntity(
+                            objectID = artwork.objectID,
+                            title = artwork.displayTitle,
+                            origin = artwork.displayOrigin,
+                            medium = artwork.displayMedium,
+                            displayImage = artwork.displayImage,
+                            artistDisplayName = artwork.displayArtist
+                        )
+                    }
+                    storageHelper.saveHomeCache(query, entitiesToSave)
+                    
+                    if (updateUi) _uiState.value = GalleryState.Success(artworks)
+                } else {
+                    if (!isRefresh && updateUi) _uiState.value = GalleryState.Error("Data karya seni tidak ditemukan.")
                 }
             } catch (e: Exception) {
-                if (!isRefresh) _uiState.value = GalleryState.Error("Terjadi kesalahan jaringan: ${e.localizedMessage}")
+                if (!isRefresh && updateUi) {
+                    _uiState.value = GalleryState.Error("Gagal terhubung ke server. Pastikan server aktif.")
+                } else if (isRefresh && updateUi) {
+                    _toastMessage.emit("Gagal sinkronisasi. Server mungkin sedang offline.")
+                    // Kembalikan ke cache jika sebelumnya menampilkan skeleton
+                    if (showSkeleton) {
+                        queryCache[query]?.let { cachedArtworks ->
+                            _uiState.value = GalleryState.Success(cachedArtworks)
+                        } ?: run {
+                            _uiState.value = GalleryState.Error("Gagal terhubung ke server. Pastikan server aktif.")
+                        }
+                    }
+                }
             } finally {
-                if (isRefresh) {
+                if (isRefresh && updateUi) {
                     _isRefreshing.value = false
                 }
             }
+        }
+    }
+
+    fun syncAllCategories(currentActiveQuery: String, forceSkeleton: Boolean = false) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            val allQueries = listOf("Sunflowers", "Painting", "Sculpture", "Photography")
+            val jobs = allQueries.map { query ->
+                launch {
+                    fetchArtworks(
+                        query = query, 
+                        isRefresh = true, 
+                        updateUi = (query == currentActiveQuery), 
+                        showSkeleton = forceSkeleton && (query == currentActiveQuery)
+                    )
+                }
+            }
+            // Tunggu semua proses selesai secara PARALEL
+            jobs.forEach { it.join() }
+            _isRefreshing.value = false
         }
     }
 }

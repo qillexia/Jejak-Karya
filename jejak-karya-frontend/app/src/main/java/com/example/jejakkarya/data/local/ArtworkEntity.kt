@@ -6,5 +6,6 @@ data class ArtworkEntity(
     val origin: String,
     val medium: String,
     val displayImage: String,
+    val artistDisplayName: String? = null,
     val savedAt: Long = System.currentTimeMillis()
 )

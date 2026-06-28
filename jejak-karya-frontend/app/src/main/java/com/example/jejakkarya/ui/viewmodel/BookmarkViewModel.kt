@@ -15,6 +15,9 @@ import kotlinx.coroutines.launch
 class BookmarkViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: BookmarkRepository
 
+    private val _isRefreshing = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     init {
         val storageHelper = StorageHelper(application)
         repository = BookmarkRepository(storageHelper)
@@ -41,6 +44,21 @@ class BookmarkViewModel(application: Application) : AndroidViewModel(application
     fun removeArtwork(id: Int) {
         viewModelScope.launch {
             repository.removeArtwork(id)
+        }
+    }
+    
+    fun removeArtworks(ids: List<Int>) {
+        viewModelScope.launch {
+            repository.removeArtworks(ids)
+        }
+    }
+
+    fun refreshCollection() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            // Memaksa StateFlow untuk memancarkan ulang data terbaru dari storage
+            kotlinx.coroutines.delay(500)
+            _isRefreshing.value = false
         }
     }
 }

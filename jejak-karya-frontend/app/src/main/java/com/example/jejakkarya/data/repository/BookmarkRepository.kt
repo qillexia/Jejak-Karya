@@ -22,4 +22,8 @@ class BookmarkRepository(private val storageHelper: StorageHelper) {
     fun removeArtwork(id: Int) {
         storageHelper.removeBookmark(id)
     }
+    
+    fun removeArtworks(ids: List<Int>) {
+        storageHelper.removeBookmarks(ids)
+    }
 }
