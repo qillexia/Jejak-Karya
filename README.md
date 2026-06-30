@@ -5,7 +5,7 @@
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=jetpackcompose)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase)
 
-**Jejak Karya** adalah sebuah aplikasi *mobile* berbasis Android yang didedikasikan untuk menyusuri peninggalan masa lalu dan melestarikan budaya Nusantara untuk masa depan. Aplikasi ini memungkinkan pengguna untuk menemukan, membaca, dan menyimpan koleksi situs-situs bersejarah, karya seni, dan budaya peninggalan leluhur (Karuhun).
+**Jejak Karya** adalah sebuah aplikasi *mobile* yang didedikasikan untuk menyusuri jejak sejarah dan melestarikan budaya peninggalan masa lalu Nusantara. Aplikasi ini memungkinkan Anda untuk menemukan, membaca, dan menyimpan koleksi situs-situs bersejarah serta karya seni warisan leluhur.
 
 ---
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const { fetch } = require('undici');
 
 const metApiBaseUrl = process.env.MET_API_BASE_URL || "https://collectionapi.metmuseum.org/public/collection/v1";
 
@@ -42,10 +42,16 @@ const fetchWithRetry = async (url, retries = 3, baseDelay = 1500) => {
     return metQueue.enqueue(async () => {
         for (let i = 0; i < retries; i++) {
             try {
-                const response = await axios.get(url, {
+                const res = await fetch(url, {
                     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
                 });
-                return response;
+                if (!res.ok) {
+                    const error = new Error(res.statusText);
+                    error.response = { status: res.status };
+                    throw error;
+                }
+                const data = await res.json();
+                return { data };
             } catch (error) {
                 if (i === retries - 1) throw error;
                 if (error.response && (error.response.status === 403 || error.response.status === 429)) {
@@ -64,10 +70,17 @@ const fetchWithRetry = async (url, retries = 3, baseDelay = 1500) => {
 const fetchDirect = async (url, retries = 2) => {
     for (let i = 0; i < retries; i++) {
         try {
-            return await axios.get(url, {
+            const res = await fetch(url, {
                 headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-                timeout: 5000
+                signal: AbortSignal.timeout(5000)
             });
+            if (!res.ok) {
+                const error = new Error(res.statusText);
+                error.response = { status: res.status };
+                throw error;
+            }
+            const data = await res.json();
+            return { data };
         } catch (error) {
             if (i === retries - 1) throw error;
             if (error.response && (error.response.status === 403 || error.response.status === 429)) {

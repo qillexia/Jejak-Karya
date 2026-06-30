@@ -69,16 +69,17 @@ fun SettingsScreen(
 
             // Clear Cache Setting
             SettingItem(
-                icon = { Icon(Icons.Filled.DeleteOutline, contentDescription = null, tint = Color.Red) },
+                icon = { Icon(Icons.Filled.DeleteOutline, contentDescription = null, tint = Color(0xFF994121)) },
                 title = "Hapus Cache",
-                subtitle = "Kosongkan ruang memori penyimpanan",
+                subtitle = "Kosongkan memori sementara aplikasi",
                 action = {
                     Button(
                         onClick = { showClearCacheDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.1f), contentColor = Color.Red),
-                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF994121), contentColor = Color.White),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Hapus")
+                        Text("Hapus", fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -87,16 +88,17 @@ fun SettingsScreen(
 
             // Edit Profile Setting
             SettingItem(
-                icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = Color(0xFF994121)) },
                 title = "Ubah Data Akun",
-                subtitle = "Perbarui profil dan kata sandi",
+                subtitle = "Perbarui profil dan kata sandi Anda",
                 action = {
                     Button(
                         onClick = onEditProfile,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
-                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF994121), contentColor = Color.White),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Ubah")
+                        Text("Ubah", fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -112,9 +114,10 @@ fun SettingsScreen(
                     Button(
                         onClick = { showLogoutDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
-                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Keluar")
+                        Text("Keluar", fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -177,29 +180,35 @@ fun SettingItem(
     subtitle: String,
     action: @Composable () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            icon()
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                icon()
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f), lineHeight = 18.sp)
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            action()
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
-            Text(text = subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        action()
     }
 }

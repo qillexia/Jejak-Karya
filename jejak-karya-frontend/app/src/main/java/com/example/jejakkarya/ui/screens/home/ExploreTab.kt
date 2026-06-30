@@ -39,6 +39,7 @@ import com.example.jejakkarya.ui.viewmodel.GalleryState
 import com.example.jejakkarya.ui.viewmodel.GalleryViewModel
 
 import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +52,7 @@ fun ExploreTab(
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { message ->
@@ -67,12 +69,8 @@ fun ExploreTab(
     var categoryScrollIndex by rememberSaveable { mutableIntStateOf(0) }
     var categoryScrollOffset by rememberSaveable { mutableIntStateOf(0) }
 
-    // Mempertahankan posisi scroll untuk tiap kategori secara persisten
-    val gridStateSemua = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    val gridStateLukisan = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    val gridStatePatung = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    val gridStateFotografi = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    val searchGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+    // Menggunakan satu state scroll tunggal agar perpindahan kategori mereset posisi layar
+    val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
 
     // Efek debounce pencarian realtime
     LaunchedEffect(searchQuery) {
@@ -172,26 +170,12 @@ fun ExploreTab(
                 // Jika tidak mencari, ambil 8 item setelah 3 item pertama (untuk grid). Jika mencari, ambil 10 item langsung.
                 val gridArtworks = if (searchQuery.isBlank()) state.artworks.drop(3).take(8) else state.artworks.take(10)
 
-                Crossfade(
-                    targetState = if (searchQuery.isNotBlank()) "Search" else selectedCategory,
-                    animationSpec = tween(400),
-                    label = "CategoryTransition"
-                ) { activeCategory ->
-                    val currentGridState = when (activeCategory) {
-                        "Search" -> searchGridState
-                        "Semua" -> gridStateSemua
-                        "Lukisan" -> gridStateLukisan
-                        "Patung" -> gridStatePatung
-                        "Fotografi" -> gridStateFotografi
-                        else -> gridStateSemua
-                    }
-
-                    LazyVerticalGrid(
-                        state = currentGridState,
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 120.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                LazyVerticalGrid(
+                    state = gridState,
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 120.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
                         // 1. Carousel Unggulan
                         if (featuredArtworks.isNotEmpty() && searchQuery.isBlank()) {
                             item(span = { GridItemSpan(2) }) {
@@ -288,16 +272,16 @@ fun ExploreTab(
                                         FilterChip(
                                             selected = isSelected,
                                             onClick = {
-                                                selectedCategory = category
-                                                val query = when (category) {
-                                                    "Semua" -> "Sunflowers"
-                                                    "Lukisan" -> "Painting"
-                                                    "Patung" -> "Sculpture"
-                                                    "Fotografi" -> "Photography"
-                                                    else -> "Sunflowers"
-                                                }
-                                                viewModel.fetchArtworks(query)
-                                            },
+                                            selectedCategory = category
+                                            val query = when (category) {
+                                                "Semua" -> "Sunflowers"
+                                                "Lukisan" -> "Painting"
+                                                "Patung" -> "Sculpture"
+                                                "Fotografi" -> "Photography"
+                                                else -> "Sunflowers"
+                                            }
+                                            viewModel.fetchArtworks(query)
+                                        },
                                             label = { Text(category, fontWeight = if(isSelected) FontWeight.Bold else FontWeight.Normal) },
                                             colors = FilterChipDefaults.filterChipColors(
                                                 selectedContainerColor = Color(0xFF994121),
@@ -356,7 +340,7 @@ fun ExploreTab(
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
-                                                text = "Gunakan fitur pencarian di atas untuk menelusuri jutaan koleksi mahakarya lainnya dari berbagai penjuru dunia.",
+                                                text = "Gunakan fitur pencarian untuk menelusuri jutaan koleksi mahakarya lainnya dari berbagai penjuru dunia.",
                                                 color = Color(0xFF4A3B32),
                                                 fontSize = 14.sp,
                                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -379,7 +363,6 @@ fun ExploreTab(
                             }
                         }
                     } // End of LazyVerticalGrid
-                } // End of Crossfade
             }
         }
     }
